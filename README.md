@@ -6,7 +6,7 @@ As is usual with the Rubrik export feature the destination share must be registe
 
 The script is in Python so Linux is preferable.  However Python can be installed on Windows or the code can be compiled into a .exe if needed.  It uses one special package for the <a href="https://github.com/rubrikinc/rubrik-sdk-for-python SDK">Rubrik SDK</a>, the rest are standard.
 
-Currently the credentials can be enetered on the CLI, included on the CLI with -c or use -c to point to a file that has been obfuscated using <a href="https://github.com/adamrfox/creds_encode">creds_encode tool I wrote (use array type "rubrik").  I'm open to other ideas on credentials, but did these options for speed of development.
+Currently the credentials can be enetered on the CLI, included on the CLI with -c or use -c to point to a file that has been obfuscated using <a href="https://github.com/adamrfox/creds_encode">creds_encode tool I wrote</a> (use array type "rubrik").  I'm open to other ideas on credentials, but did these options for speed of development.
 
 The syntax is as follows:
 <pre>Usage: rbk_smb_export.py [-hD] [-c creds] rubrik "src_unc" "dest_unc"

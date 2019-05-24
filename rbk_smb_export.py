@@ -19,6 +19,9 @@ def usage():
     sys.stderr.write("\"dest_unc\" : UNC path to the restore location.  NOTE Use quotas\n")
     exit(0)
 
+
+# if obfuscated creds file is passed, decode it.
+
 def get_creds_from_file(file, array):
     with open(file) as fp:
         data = fp.read()
@@ -60,6 +63,9 @@ def get_share_id(rbk_host_share, host, share):
             break
     return(share_id, host_id)
 
+# Multiple instances of src_path were found.  See if this is because it's a directory.  If an directory that is an
+# exact match is found, save it and find the lastest snap_id where and pass it back for restore
+
 def dir_match(rubrik_api, rbk_search, src_path):
     filename = ""
     latest_date = "1970-0101T01:00:00"
@@ -76,10 +82,6 @@ def dir_match(rubrik_api, rbk_search, src_path):
     return (filename, latest_snap_id)
 
 
-
-
-
-
 if __name__ == "__main__":
     user = ""
     password = ""
@@ -88,6 +90,8 @@ if __name__ == "__main__":
     target_path = ""
     DEBUG = False
     filename = ""
+
+# Parse arguments
 
     optlist, args = getopt.getopt(sys.argv[1:], 'hc:D', ['--help', '--creds=', '--debug'])
     for opt, a in optlist:
@@ -114,10 +118,16 @@ if __name__ == "__main__":
     dest_share = dest_f[2]
     dest_path = "\\".join(dest_f[3:])
     dest_path = "\\" + dest_path
+
+# Prompt for creds if not provided
+
     if user == "":
         user = raw_input("User: ")
     if password == "":
         password = getpass.getpass("Password: ")
+
+# Get share_id from Rubrik
+
     rubrik_api = rubrik_cdm.Connect(rubrik_host, user, password)
     rbk_host_share = rubrik_api.get('internal', '/host/share')
     (src_share_id, src_host_id) = get_share_id(rbk_host_share, src_host, src_share)
@@ -126,6 +136,10 @@ if __name__ == "__main__":
         exit(1)
     dprint("Source ShareID: " + src_share_id)
     src_snap_id = ""
+
+# Search for source file/dir.  If multiple instances found, it could be a directory.  If so, search for a directory
+# with an exact match.  Return filename and latest snapshot ID to ensure getting the latest version
+
     rbk_search = rubrik_api.get('internal', '/host/share/' + str(src_share_id) + "/search?path=" + src_path)
     if rbk_search['total'] == 0:
         sys.stderr.write("Can't find file on source\n")
@@ -142,11 +156,17 @@ if __name__ == "__main__":
         sys.stderr.write("Snapshot for source file not found\n")
         exit(1)
     dprint("Source SnapshotID: " + src_snap_id)
+
+# Get the destination share ID
+
     (dest_share_id, dest_host_id) = get_share_id(rbk_host_share, dest_host, dest_share)
     if dest_share_id == "":
         sys.stderr.write("Can't find destination share on Rubrik\n")
         exit(1)
     dprint("Destination ShareId: " + dest_share_id)
+
+# Fire off the export.  Check the job every 5 seconds to see if it's done.  If successful, print the UNC path of the target
+
     payload = {"sourceDir": src_path, "destinationDir": dest_path, "hostId": dest_host_id, "shareId": dest_share_id}
     rbk_export = rubrik_api.post('v1', '/fileset/snapshot/' + str(src_snap_id) + '/export_file', payload)
     job_url = rbk_export['links'][0]['href'].split('/')

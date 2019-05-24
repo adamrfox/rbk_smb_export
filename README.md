@@ -1,5 +1,5 @@
 # rbk_smb_export
-A quick script to automate finding the latest version of a backed up file on a SMB share and exporting it to a new location
+A quick script to automate finding the latest version of a backed up file or directory on a SMB share and exporting it to a new location
 
 This script helps automate restoring a single file from a Rubrik backup and restores it to a different share.  
 As is usual with the Rubrik export feature the destination share must be registered with Rubrik even if there is no SLA to protect that share.  The inputs are the UNC path to the source file and the UNC path to the destination directory.  The output is simply the UNC path of the restored file.

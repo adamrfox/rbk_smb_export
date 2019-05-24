@@ -68,7 +68,7 @@ def get_share_id(rbk_host_share, host, share):
 
 def dir_match(rubrik_api, rbk_search, src_path):
     filename = ""
-    latest_date = "1970-0101T01:00:00"
+    latest_date = "1970-01-01T01:00:00"
     latest_snap_id = ""
     for f in rbk_search['data']:
         if f['path'] == src_path:

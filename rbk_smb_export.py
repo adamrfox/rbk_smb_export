@@ -60,6 +60,24 @@ def get_share_id(rbk_host_share, host, share):
             break
     return(share_id, host_id)
 
+def dir_match(rubrik_api, rbk_search, src_path):
+    filename = ""
+    latest_date = "1970-0101T01:00:00"
+    latest_snap_id = ""
+    for f in rbk_search['data']:
+        if f['path'] == src_path:
+            filename = f['filename']
+            for snap in f['fileVersions']:
+                if snap['fileMode'] == "directory":
+                    snap_id = snap['snapshotId']
+                    rbk_snap = rubrik_api.get('v1', '/fileset/snapshot/' + str(snap_id))
+                    if rbk_snap['date'] > latest_date:
+                        latest_snap_id = snap_id
+    return (filename, latest_snap_id)
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -69,6 +87,7 @@ if __name__ == "__main__":
     src_path = ""
     target_path = ""
     DEBUG = False
+    filename = ""
 
     optlist, args = getopt.getopt(sys.argv[1:], 'hc:D', ['--help', '--creds=', '--debug'])
     for opt, a in optlist:
@@ -112,10 +131,13 @@ if __name__ == "__main__":
         sys.stderr.write("Can't find file on source\n")
         exit(1)
     if rbk_search['total'] > 1:
-        sys.stderr.write("Multiple instances of the file found: " + src_path + "\n")
-        exit(1)
-    filename = rbk_search['data'][0]['filename']
-    src_snap_id = find_latest_snapshot(rubrik_api,rbk_search)
+        (filename, src_snap_id) = dir_match(rubrik_api, rbk_search, src_path)
+        if filename == "":
+            sys.stderr.write("Multiple instances of the file found: " + src_path + "\n")
+            exit(1)
+    if filename == "":
+        filename = rbk_search['data'][0]['filename']
+        src_snap_id = find_latest_snapshot(rubrik_api,rbk_search)
     if src_snap_id == "":
         sys.stderr.write("Snapshot for source file not found\n")
         exit(1)

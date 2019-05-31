@@ -181,7 +181,7 @@ if __name__ == "__main__":
         elif job_status == "SUCCEEDED":
             done = True
         else:
-            sys.stdeerr.write("Job Ended with status: " + job_status + "\n")
+            sys.stderr.write("Job Ended with status: " + job_status + "\n")
             exit(1)
     print "\\" + dest_path_full + "\\" + filename
 
